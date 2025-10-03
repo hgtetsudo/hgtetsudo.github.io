@@ -3,13 +3,32 @@
 
 <head>
     <title>HG鉄道仮部 | ホーム</title>
-    <script>
-  var password = prompt("Enter the password to access this page:");
-  if (password !== "yourpassword") {
-    alert("Incorrect password!");
-    window.location.href = "https://www.google.com"; // or any other page
-  }
-</script>
+        <script>
+            // Hide page content until login
+            document.addEventListener('DOMContentLoaded', function() {
+                document.body.style.display = 'none';
+            });
+        </script>
+        <script>
+            async function checkLogin(event) {
+                event.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                try {
+                    const res = await fetch('users.json');
+                    const data = await res.json();
+                    const user = data.users.find(u => u.username === username && u.password === password);
+                    if (user) {
+                        document.getElementById('login-form').style.display = 'none';
+                        document.body.style.display = '';
+                    } else {
+                        alert('ユーザー名またはパスワードが違います。');
+                    }
+                } catch (e) {
+                    alert('ログイン情報の取得に失敗しました。');
+                }
+            }
+        </script>
     <style>
         button {
             height: 30px;
@@ -52,30 +71,58 @@
             margin-left: 10px;
         }
     </style>
+
 </head>
 
-<body>
-    <h1>発車メロディー || HG鉄道仮部</h1>
-    <a href="/tool/index.html"><button>ツール</button></a>
-    <a href="/bell/index.html"><button>発車メロディー</button></a>
-    <a href="/photos/index.html"><button>写真</button></a>
-    <a href="/contacts.html"><button>お問い合わせ</button></a>
-    <marquee scrollamount="15" style="height: 40px;
-            font-size: 28px;
-            font-family: 'Courier New', Courier, monospace;
-            margin-top: 8px;
-            padding-top: 5px;
-            padding-bottom: 5px;
-            background-color: #2B2B2B;
-            color: greenyellow;">本日も<span
-            style='color:greenyellow;'>HG鉄道仮部</span>をご利用いただきまして、ありがとうございます。今度の１番線の列車は、９時１５分発、<span
-            style='color:orange;'>快速</span> 甲府行きです。この列車は１２両です。この列車の<span style='color:red'
-            class="blinking">後ろ寄り１２号車から５号車は、大月止まりです。</span></marquee>
-    <hr>
 
-    <h1>ようこそ。</h1>
-    <a href="/bell/ourstuff/index.html"><button>収録発車メロディー集</button></a>
-    <a href=""><button>これしかないです。</button></a>
+<body style="display:none;">
+    <form id="login-form" onsubmit="checkLogin(event)" style="margin: 100px auto; max-width: 300px; background: #eee; padding: 20px; border-radius: 10px;">
+        <h2>ログイン</h2>
+        <label>ユーザー名: <input type="text" id="username" required></label><br><br>
+        <label>パスワード: <input type="password" id="password" required></label><br><br>
+        <button type="submit">ログイン</button>
+    </form>
+    <div id="page-content" style="display:none;">
+        <h1>発車メロディー || HG鉄道仮部</h1>
+        <a href="/tool/index.html"><button>ツール</button></a>
+        <a href="/bell/index.html"><button>発車メロディー</button></a>
+        <a href="/photos/index.html"><button>写真</button></a>
+        <a href="/contacts.html"><button>お問い合わせ</button></a>
+        <marquee scrollamount="15" style="height: 40px;
+                        font-size: 28px;
+                        font-family: 'Courier New', Courier, monospace;
+                        margin-top: 8px;
+                        padding-top: 5px;
+                        padding-bottom: 5px;
+                        background-color: #2B2B2B;
+                        color: greenyellow;">本日も<span
+                        style='color:greenyellow;'>HG鉄道仮部</span>をご利用いただきまして、ありがとうございます。今度の１番線の列車は、９時１５分発、<span
+                        style='color:orange;'>快速</span> 甲府行きです。この列車は１２両です。この列車の<span style='color:red'
+                        class="blinking">後ろ寄り１２号車から５号車は、大月止まりです。</span></marquee>
+        <hr>
+
+        <h1>ようこそ。</h1>
+        <a href="/bell/ourstuff/index.html"><button>収録発車メロディー集</button></a>
+        <a href=""><button>これしかないです。</button></a>
+    </div>
+    <script>
+        // Show content only after login
+        function showContent() {
+            document.getElementById('page-content').style.display = '';
+        }
+        // Patch checkLogin to show content
+        const origCheckLogin = checkLogin;
+        checkLogin = async function(event) {
+            await origCheckLogin(event);
+            if (document.body.style.display === '') {
+                showContent();
+            }
+        }
+        // If already logged in (for future extension), show content
+        if (document.body.style.display === '') {
+            showContent();
+        }
+    </script>
 </body>
 
 </html>
