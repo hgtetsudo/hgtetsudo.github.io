@@ -50,13 +50,7 @@
 </head>
 
 
-<body style="display:none;">
-    <form id="login-form" onsubmit="checkLogin(event)" style="margin: 100px auto; max-width: 300px; background: #eee; padding: 20px; border-radius: 10px;">
-        <h2>ログイン</h2>
-        <label>ユーザー名: <input type="text" id="username" required></label><br><br>
-        <label>パスワード: <input type="password" id="password" required></label><br><br>
-        <button type="submit">ログイン</button>
-    </form>
+<body>
     <div id="page-content" style="display:none;">
         <h1>発車メロディー || HG鉄道仮部</h1>
         <a href="/tool/index.html"><button>ツール</button></a>
@@ -80,24 +74,7 @@
         <a href="/bell/ourstuff/index.html"><button>収録発車メロディー集</button></a>
         <a href=""><button>これしかないです。</button></a>
     </div>
-    <script>
-        // Show content only after login
-        function showContent() {
-            document.getElementById('page-content').style.display = '';
-        }
-        // Patch checkLogin to show content
-        const origCheckLogin = checkLogin;
-        checkLogin = async function(event) {
-            await origCheckLogin(event);
-            if (document.body.style.display === '') {
-                showContent();
-            }
-        }
-        // If already logged in (for future extension), show content
-        if (document.body.style.display === '') {
-            showContent();
-        }
-    </script>
+    <!-- login.js handles login form and content visibility -->
 </body>
 
 </html>
