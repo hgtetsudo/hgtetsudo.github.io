@@ -13,7 +13,10 @@
       <label>パスワード: <input type="password" id="password" required></label><br><br>
       <button type="submit">ログイン</button>
     `;
-    document.body.appendChild(form);
+  // Hide #page-content by default (in case script loads after DOM)
+  var pageContent = document.getElementById('page-content');
+  if (pageContent) pageContent.style.display = 'none';
+  document.body.appendChild(form);
     form.onsubmit = async function(event) {
       event.preventDefault();
       var username = document.getElementById('username').value;
@@ -27,6 +30,8 @@
         if (user) {
           form.style.display = 'none';
           document.body.style.display = '';
+          var pageContent = document.getElementById('page-content');
+          if (pageContent) pageContent.style.display = '';
         } else {
           alert('ユーザー名またはパスワードが違います。');
         }
