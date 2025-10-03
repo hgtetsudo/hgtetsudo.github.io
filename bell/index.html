@@ -3,32 +3,7 @@
 
 <head>
     <title>HG鉄道仮部 | ホーム</title>
-        <script>
-            // Hide page content until login
-            document.addEventListener('DOMContentLoaded', function() {
-                document.body.style.display = 'none';
-            });
-        </script>
-        <script>
-            async function checkLogin(event) {
-                event.preventDefault();
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
-                try {
-                    const res = await fetch('users.json');
-                    const data = await res.json();
-                    const user = data.users.find(u => u.username === username && u.password === password);
-                    if (user) {
-                        document.getElementById('login-form').style.display = 'none';
-                        document.body.style.display = '';
-                    } else {
-                        alert('ユーザー名またはパスワードが違います。');
-                    }
-                } catch (e) {
-                    alert('ログイン情報の取得に失敗しました。');
-                }
-            }
-        </script>
+        <script src="/login/login.js"></script>
     <style>
         button {
             height: 30px;
