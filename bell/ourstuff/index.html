@@ -3,7 +3,12 @@
 
 <head>
     <title>HG鉄道仮部 | ホーム</title>
-    <script src="/login/login.js"></script>
+        <script>
+        // Prevent direct access/bookmarking
+        if (document.referrer === '' || !document.referrer.startsWith(location.origin)) {
+            window.location.href = '/';
+        }
+        </script>
     <style>
         button {
             height: 30px;
