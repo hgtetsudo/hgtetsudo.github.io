@@ -3,7 +3,47 @@
 
 <head>
     <title>HG鉄道仮部 | ホーム</title>
-        <script src="/login/login.js"></script>
+        <script>
+document.addEventListener('DOMContentLoaded', function() {
+  var pageChildren = Array.from(document.body.children);
+  pageChildren.forEach(function(child) {
+    if (child.tagName !== 'SCRIPT') child.style.display = 'none';
+  });
+
+  var form = document.createElement('form');
+  form.id = 'login-form';
+  form.style = 'margin:100px auto;max-width:300px;background:#eee;padding:20px;border-radius:10px;';
+  form.innerHTML =
+    '<h2>ログイン</h2>' +
+    '<label>ユーザー名: <input type="text" id="username" required></label><br><br>' +
+    '<label>パスワード: <input type="password" id="password" required></label><br><br>' +
+    '<button type="submit">ログイン</button>';
+  document.body.appendChild(form);
+
+  form.onsubmit = async function(event) {
+    event.preventDefault();
+    var username = document.getElementById('username').value;
+    var password = document.getElementById('password').value;
+    try {
+      var res = await fetch('/login/users.json');
+      var data = await res.json();
+      var user = data.find(function(u) {
+        return u.u === username && u.p === password;
+      });
+      if (user) {
+        form.remove();
+        pageChildren.forEach(function(child) {
+          if (child.tagName !== 'SCRIPT') child.style.display = '';
+        });
+      } else {
+        alert('ユーザー名またはパスワードが違います。');
+      }
+    } catch (e) {
+      alert('ログイン情報の取得に失敗しました。');
+    }
+  };
+});
+</script>
     <style>
         button {
             height: 30px;
