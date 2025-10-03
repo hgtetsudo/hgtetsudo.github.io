@@ -5,6 +5,8 @@
     <title>HG鉄道仮部 | ホーム</title>
         <script>
 document.addEventListener('DOMContentLoaded', function() {
+
+  // Hide all body children except scripts until login
   var pageChildren = Array.from(document.body.children);
   pageChildren.forEach(function(child) {
     if (child.tagName !== 'SCRIPT') child.style.display = 'none';
