@@ -3,6 +3,13 @@
 
 <head>
     <title>HG鉄道仮部 | ホーム</title>
+    <script>
+  var password = prompt("Enter the password to access this page:");
+  if (password !== "yourpassword") {
+    alert("Incorrect password!");
+    window.location.href = "https://www.google.com"; // or any other page
+  }
+</script>
     <style>
         button {
             height: 30px;
