@@ -3,6 +3,12 @@
 
 <head>
     <title>HG鉄道仮部 | ホーム</title>
+    <script>
+        // Prevent direct access/bookmarking
+        if (document.referrer === '' || !document.referrer.startsWith(location.origin)) {
+            window.location.href = '/';
+        }
+        </script>
     <style>
         button {
             height: 30px;
@@ -50,18 +56,23 @@
 <body>
     <div data-include="/includes/header.html" data-fallback="<a href='/index.html'>HG鉄道仮部</a>"></div>
     <script src="/scripts/include-loader.js"></script>
+    
     <marquee id="site-marquee" scrollamount="15" style="height: 40px; font-size: 28px; font-family: 'Courier New', Courier, monospace; margin-top: 8px; padding-top: 5px; padding-bottom: 5px; background-color: #2B2B2B; color: greenyellow;">HG鉄道仮部へようこそ。</marquee>
     <script src="/scripts/marquee-loader.js"></script>
     <hr>
 
-    <a href="/bell/wiki/index.html"><button>戻る</button></a>
-    <h2>路線一覧</h2>
-    <h3>JR 東日本</h3>
-    <p><a href="/bell/wiki/lines/jre/ja/index.html">川越・埼京・りんかい線 [川越〜大宮〜大崎〜新木場]</a></p>
-    <p><a href="/bell/wiki/lines/jre/jb/index.html">中央・総武各駅停車 [千葉〜両国〜御茶ノ水〜三鷹]</a></p>
-    <p><a href="/bell/wiki/lines/jre/jc/index.html">中央線（快速）[東京〜大月]</a><p>
-    <p><a href="/belll/wiki/lines/jre/co/index.html">中央東線 [大月〜塩尻]</a></p>
-    <p><a href="/bell/wiki/lines/jre/co_ta/index.html">中央東線辰野支線 [岡谷〜辰野〜塩尻]</a></p>
+    <a href="/bell/ourstuff/index.html"><button>戻る</button></a>
+    <h2>発車メロディー ま〜も　や〜よ</h2>
+    <p style="color:red;"><b>注意：しっかり音声を停止しないと、音が混ざって気持ち悪くなります。ボタンを押しても音声が流れない場合は、少々お待ちください。読み込みに時間がかかります。それでも流れない場合は、<a href="mailto:sotaoikawa810@gmail.com">こちらへご連絡ください。</a></b></p>
+    <h3>メロディー　東大宮</h3>
+    <audio controls src="melody_higashioomiya.mp3"></audio>
+    <hr>
+
+    <h3>窓の花飾り　成田</h3>
+    <audio controls src="hanakazari_narita.mp3"></audio>
+    <hr>
+    <div data-include="/includes/footer.html" data-fallback="&copy; HG鉄道仮部"></div>
+    <script src="/scripts/include-loader.js"></script>
 </body>
 
 </html>

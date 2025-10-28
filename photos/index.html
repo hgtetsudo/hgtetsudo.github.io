@@ -46,22 +46,9 @@
 </head>
 
 <body>
-    <a href="/index.html"><h1>HG鉄道仮部</h1></a>
-    <a href="/tool/index.html"><button>ツール</button></a>
-    <a href="/bell/index.html"><button>発車メロディー</button></a>
-    <a href="/photos/index.html"><button>写真</button></a>
-    <a href="/contacts.html"><button>お問い合わせ</button></a>
-    <marquee scrollamount="15" style="height: 40px;
-            font-size: 28px;
-            font-family: 'Courier New', Courier, monospace;
-            margin-top: 8px;
-            padding-top: 5px;
-            padding-bottom: 5px;
-            background-color: #2B2B2B;
-            color: greenyellow;">本日も<span
-            style='color:greenyellow;'>HG鉄道仮部</span>をご利用いただきまして、ありがとうございます。今度の１番線の列車は、９時１５分発、<span
-            style='color:orange;'>快速</span> 甲府行きです。この列車は１２両です。この列車の<span style='color:red'
-            class="blinking">後ろ寄り１２号車から５号車は、大月止まりです。</span></marquee>
+    <div data-include="/includes/header.html" data-fallback="<a href='/index.html'>HG鉄道仮部</a>"></div>
+    <script src="/scripts/include-loader.js"></script>
+    <marquee id="site-marquee" scrollamount="15" style="height: 40px; font-size: 28px; font-family: 'Courier New', Courier, monospace; margin-top: 8px; padding-top: 5px; padding-bottom: 5px; background-color: #2B2B2B; color: greenyellow;">HG鉄道仮部へようこそ。</marquee>
     <hr>
 
     <p>著作権の関係で、発車メロディーページはログインが必要です。</p>
@@ -70,6 +57,8 @@
     <a href="https://forms.gle/xShsMMZPQVD9truK8"><button id="newpost">新規写真</button></a>
 <a href="feed.html"><button>新着写真</button></a>
 <a href="albums/index.html"><button>アルバム一覧</button></a>
+    <div data-include="/includes/footer.html" data-fallback="&copy; HG鉄道仮部"></div>
+    <script src="/scripts/include-loader.js"></script>
 </body>
 
 </html>
