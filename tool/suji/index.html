@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var username = document.getElementById('username').value;
     var password = document.getElementById('password').value;
     try {
-      var res = await fetch('/login/users.json');
+  var res = await fetch('/login/users.json', { cache: 'no-store' });
       var data = await res.json();
       var user = data.find(function(u) {
         return u.u === username && u.p === password;
@@ -96,7 +96,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <body>
   <div data-include="/includes/header.html" data-fallback="<a href='/index.html'>HG鉄道仮部</a>"></div>
-  <script src="/scripts/include-loader.js"></script>
   <marquee id="site-marquee" scrollamount="15" style="height: 40px; font-size: 28px; font-family: 'Courier New', Courier, monospace; margin-top: 8px; padding-top: 5px; padding-bottom: 5px; background-color: #2B2B2B; color: greenyellow;">HG鉄道仮部へようこそ。</marquee>
     <hr>
 

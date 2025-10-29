@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var username = document.getElementById('username').value;
     var password = document.getElementById('password').value;
     try {
-      var res = await fetch('/login/users.json');
+  var res = await fetch('/login/users.json', { cache: 'no-store' });
       var data = await res.json();
       var user = data.find(function(u) {
         return u.u === username && u.p === password;
