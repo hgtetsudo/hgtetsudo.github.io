@@ -39,6 +39,9 @@
       // Final stall when reaching ~98-99%
       let finalStallDone = false;
 
+      // Ensure progress never goes backwards
+      let lastT = 0;
+
       // Compute a pseudo-progress value taking into account randomness and pauses
       function computeT(elapsed){
         // Map elapsed to a base progress value (0..1) but allow baseDuration to vary slightly
@@ -51,7 +54,10 @@
         // Add small, diminishing random jitter so the bar wobbles early on
         const jitterScale = (1 - base) * 0.06; // up to ~6% early, shrinks to 0
         const jitter = (Math.random() - 0.5) * jitterScale;
-        let t = Math.max(0, Math.min(1, base + jitter));
+        let t = base + jitter;
+
+        // Clamp to 0..1
+        t = Math.max(0, Math.min(1, t));
 
         return t;
       }
@@ -67,18 +73,21 @@
 
         // Possibly trigger a freeze when passing nextFreezeAt
         const approxBase = Math.min(1, elapsed / baseDuration);
-        if (approxBase >= nextFreezeAt && frozenUntil === 0) {
+        if (approxBase >= nextFreezeAt && frozenUntil === 0 && !finalStallDone) {
           // Random freeze between 200ms and 1200ms
           frozenUntil = now + (200 + Math.random() * 1000);
           // schedule next freeze later
           nextFreezeAt = approxBase + 0.15 + Math.random() * 0.2; // later in timeline
-          // keep previous displayed values during freeze
           requestAnimationFrame(tick);
           return;
         }
 
         // Compute target t with jitter
         let t = computeT(elapsed);
+
+        // Enforce monotonicity: never go below lastT
+        if (t < lastT) t = lastT;
+        lastT = t;
 
         // If t reaches the final zone, slow it down: clamp to 0.98-0.995 and wait
         if (t >= 0.98 && !finalStallDone) {
@@ -92,6 +101,7 @@
             // jump to complete
             bar.style.width = '100%';
             percent.textContent = '100%';
+            lastT = 1;
             // small delay to let users see 100%
             setTimeout(()=>window.location.replace('/home/'), 200);
           }, 400 + Math.random() * 1000);
@@ -105,6 +115,7 @@
         if (t < 1) {
           requestAnimationFrame(tick);
         } else {
+          lastT = 1;
           window.location.replace('/home/');
         }
       }
