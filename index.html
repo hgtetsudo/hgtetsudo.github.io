@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>読み込み中…</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#f6f8fa;color:#111}
+    .card{width:90%;max-width:520px;padding:28px;border-radius:10px;background:#fff;box-shadow:0 6px 20px rgba(0,0,0,.08);text-align:center}
+    .title{font-size:18px;margin-bottom:14px}
+    .progress{width:100%;height:14px;background:#e6eef8;border-radius:999px;overflow:hidden;margin:18px 0}
+    .bar{height:100%;width:0;background:linear-gradient(90deg,#4aa3ff,#2b8cff);transition:width .2s linear}
+    .percent{font-size:13px;color:#555}
+    .small{font-size:13px;color:#666;margin-top:12px}
+    a{color:#2b8cff}
+  </style>
+</head>
+<body>
+  <div class="card" role="status" aria-live="polite">
+    <div class="title">読み込み中…</div>
+    <div class="progress" aria-hidden="true"><div class="bar" id="bar"></div></div>
+    <div class="percent" id="percent">0%</div>
+    <div class="small">ページが自動で開かない場合は <a href="/home/">こちらをクリック</a></div>
+  </div>
+
+  <script>
+    (function(){
+      const min = 2000, max = 4000; // base ms
+      const baseDuration = Math.floor(Math.random() * (max - min + 1)) + min;
+      const start = performance.now();
+      const bar = document.getElementById('bar');
+      const percent = document.getElementById('percent');
+
+      // Freeze parameters
+      let nextFreezeAt = Math.random() * 0.7 + 0.1; // between ~0.1 and 0.8
+      let frozenUntil = 0;
+
+      // Final stall when reaching ~98-99%
+      let finalStallDone = false;
+
+      // Compute a pseudo-progress value taking into account randomness and pauses
+      function computeT(elapsed){
+        // Map elapsed to a base progress value (0..1) but allow baseDuration to vary slightly
+        const jitterDur = baseDuration * (0.8 + Math.random() * 0.6); // 0.8x..1.4x
+        let base = Math.min(1, elapsed / jitterDur);
+
+        // Apply an ease (fast start, slow end)
+        base = 1 - Math.pow(1 - base, 1.6);
+
+        // Add small, diminishing random jitter so the bar wobbles early on
+        const jitterScale = (1 - base) * 0.06; // up to ~6% early, shrinks to 0
+        const jitter = (Math.random() - 0.5) * jitterScale;
+        let t = Math.max(0, Math.min(1, base + jitter));
+
+        return t;
+      }
+
+      function tick(now){
+        const elapsed = now - start;
+
+        // If currently frozen, hold progress until frozenUntil
+        if (now < frozenUntil) {
+          requestAnimationFrame(tick);
+          return;
+        }
+
+        // Possibly trigger a freeze when passing nextFreezeAt
+        const approxBase = Math.min(1, elapsed / baseDuration);
+        if (approxBase >= nextFreezeAt && frozenUntil === 0) {
+          // Random freeze between 200ms and 1200ms
+          frozenUntil = now + (200 + Math.random() * 1000);
+          // schedule next freeze later
+          nextFreezeAt = approxBase + 0.15 + Math.random() * 0.2; // later in timeline
+          // keep previous displayed values during freeze
+          requestAnimationFrame(tick);
+          return;
+        }
+
+        // Compute target t with jitter
+        let t = computeT(elapsed);
+
+        // If t reaches the final zone, slow it down: clamp to 0.98-0.995 and wait
+        if (t >= 0.98 && !finalStallDone) {
+          // show 98 or 99 for a random short period before finishing
+          const showPct = 98 + Math.floor(Math.random() * 2); // 98 or 99
+          bar.style.width = showPct + '%';
+          percent.textContent = showPct + '%';
+          finalStallDone = true;
+          // final delay between 400ms and 1400ms
+          setTimeout(()=>{
+            // jump to complete
+            bar.style.width = '100%';
+            percent.textContent = '100%';
+            // small delay to let users see 100%
+            setTimeout(()=>window.location.replace('/home/'), 200);
+          }, 400 + Math.random() * 1000);
+          return;
+        }
+
+        const pct = Math.round(t * 100);
+        bar.style.width = pct + '%';
+        percent.textContent = pct + '%';
+
+        if (t < 1) {
+          requestAnimationFrame(tick);
+        } else {
+          window.location.replace('/home/');
+        }
+      }
+
+      requestAnimationFrame(tick);
+    })();
+  </script>
+</body>
+</html>
