@@ -81,3 +81,71 @@ body > *:not(.site-header):not(.site-footer):not(script):not(style):not(link) {
   0% { transform: translateX(0%); }
   100% { transform: translateX(-100%); }
 }
+
+/* Common page styles moved from inline <style> blocks */
+button {
+  height: 30px;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-radius: 5px;
+}
+
+button:hover {
+  background-color: gray;
+  color: white;
+}
+
+/* Content boxes used across the site */
+div {
+  border-radius: 3px;
+  padding: 10px;
+  margin-bottom: 20px;
+  background-color: lightgray;
+}
+
+#newpost { margin-bottom: 10px; }
+
+#posttitle { font-size: 20px; margin-left: 10px; }
+#poster { text-align: right; margin-right: 10px; }
+#posttext { margin-left: 10px; }
+
+ul { margin-left: 20px; }
+
+/* Table styles used in some wiki pages */
+table {
+  border-collapse: collapse;
+  border: 2px solid rgb(140,140,140);
+  font-family: sans-serif;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+caption { caption-side: bottom; padding: 10px; font-weight: bold; }
+thead, tfoot { background-color: rgb(228,240,245); }
+th, td { border: 1px solid rgb(160,160,160); padding: 8px 10px; }
+tbody > tr:nth-of-type(even) { background-color: rgb(237,238,242); }
+
+/* Inline-style replacements */
+#site-marquee {
+  height: 40px;
+  font-size: 28px;
+  font-family: 'Courier New', Courier, monospace;
+  margin-top: 8px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  background-color: #2B2B2B;
+  color: greenyellow;
+  display: block;
+}
+
+.mt-10 { margin-top: 10px; }
+
+.alert-red { color: red; }
+
+.responsive-img { max-width: 100%; height: auto; max-height: 400px; display: block; }
+
+/* Footer overrides (moved from includes/footer.html) */
+.site-footer { font-size:0.9em; color:#666; padding:8px 0; margin-top:10px; background:transparent !important; box-shadow:none !important; }
+.site-footer > * { background:transparent !important; border-radius:0 !important; padding:0 !important; margin:0.25em 0; }
+.site-footer a { color:inherit; }
+
+

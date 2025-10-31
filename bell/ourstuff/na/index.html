@@ -9,60 +9,19 @@
             window.location.href = '/';
         }
         </script>
-    <style>
-        button {
-            height: 30px;
-            border-radius: 5px;
-            padding-left: 10px;
-            padding-right: 10px;
-            padding-bottom: 10px;
-
-        }
-
-        button:hover {
-            background-color: gray;
-            color: white;
-        }
-
-
-        div {
-            background-color: lightgray;
-            border-radius: 10px;
-            padding: 10px;
-            margin-bottom: 20px;
-        }
-
-        #newpost {
-
-            margin-bottom: 10px;
-        }
-
-        #posttitle {
-            font-size: 20px;
-            margin-left: 10px;
-        }
-
-        #poster {
-            text-align: right;
-            margin-right: 10px;
-        }
-
-        #posttext {
-            margin-left: 10px;
-        }
-    </style>
+    <!-- moved styles into /styles/site.css -->
 </head>
 
 <body>
     <div data-include="/includes/header.html" data-fallback="<a href='/index.html'>HG鉄道仮部</a>"></div>
     
-    <marquee id="site-marquee" scrollamount="15" style="height: 40px; font-size: 28px; font-family: 'Courier New', Courier, monospace; margin-top: 8px; padding-top: 5px; padding-bottom: 5px; background-color: #2B2B2B; color: greenyellow;">HG鉄道仮部へようこそ。</marquee>
+    <marquee id="site-marquee" scrollamount="15">HG鉄道仮部へようこそ。</marquee>
     <script src="/scripts/marquee-loader.js"></script>
     <hr>
 
     <a href="/bell/ourstuff/index.html"><button>戻る</button></a>
     <h2>発車メロディー な〜の　は〜ほ</h2>
-    <p style="color:red;"><b>注意：しっかり音声を停止しないと、音が混ざって気持ち悪くなります。ボタンを押しても音声が流れない場合は、少々お待ちください。読み込みに時間がかかります。それでも流れない場合は、<a href="mailto:sotaoikawa810@gmail.com">こちらへご連絡ください。</a></b></p>
+    <p class="alert-red"><b>注意：しっかり音声を停止しないと、音が混ざって気持ち悪くなります。ボタンを押しても音声が流れない場合は、少々お待ちください。読み込みに時間がかかります。それでも流れない場合は、<a href="mailto:sotaoikawa810@gmail.com">こちらへご連絡ください。</a></b></p>
     <h3>ナイスガイ　品川</h3>
     <audio controls src="niceguy_shinagawa.mp3"></audio>
     <hr>
