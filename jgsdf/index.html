@@ -2,284 +2,404 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JGSDF Mission Board</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-body { font-family:"Courier New", monospace; background:#ffffff; color:#000000; margin:0; padding:0; }
-#bootup { position:fixed; top:0; left:0; width:100%; height:100%; background:#000; color:#00ff00; display:flex; flex-direction:column; justify-content:center; align-items:center; font-size:18px; z-index:1000; white-space:pre; }
-#board { display:none; padding:20px; }
-h1 { text-align:center; color:#000; }
-h2 { margin-top:20px; }
-.mission-board { display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:10px; }
-.mission-card { background:#f0f0f0; padding:15px; border-radius:8px; display:flex; flex-direction:column; gap:10px; cursor:pointer; border:1px solid #ccc; }
-.mission-card.accepted { background:#d0ffd0; }
-.mission-card.completed { background:#c0c0c0; text-decoration:line-through; }
-button { padding:8px 12px; border:none; border-radius:5px; background:#000; color:#fff; cursor:pointer; margin-top:5px; }
-button:hover { background:#333; }
-#rank { text-align:center; margin-top:10px; font-size:18px; }
-.xp-bar-container { background:#eee; border-radius:8px; width:100%; height:20px; margin-top:5px; }
-.xp-bar { background:#000; height:100%; border-radius:8px; width:0%; }
-#log { background:#f9f9f9; padding:10px; border-radius:8px; margin-top:20px; white-space: pre-wrap; max-height:250px; overflow-y:auto; border:1px solid #ccc; }
-.section { margin-top:20px; }
+    body {
+        margin: 0;
+        font-family: "Courier New", monospace;
+        background: #ffffff;
+        color: #000000;
+    }
+    #bootScreen {
+        position: fixed;
+        inset: 0;
+        background: #000;
+        color: #0f0;
+        padding: 30px;
+        font-size: 20px;
+        white-space: pre-wrap;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    h1 {
+        text-align: center;
+        margin-top: 10px;
+        font-size: 28px;
+    }
+    .section-title {
+        background: #000;
+        color: #fff;
+        padding: 8px;
+        margin: 20px 0 5px;
+        font-size: 18px;
+    }
+    .mission {
+        border: 1px solid #000;
+        padding: 10px;
+        margin: 8px;
+        cursor: pointer;
+        transition: 0.1s;
+    }
+    .mission:hover {
+        background: #eee;
+    }
+    #acceptedSection {
+        background: #f0f0f0;
+        padding: 10px;
+        border-top: 2px solid #000;
+    }
+    #briefingBox {
+        padding: 20px;
+        border: 2px solid #000;
+        background: #fff;
+        position: fixed;
+        top: 20%;
+        left: 10%;
+        right: 10%;
+        display: none;
+    }
+    button {
+        padding: 10px;
+        border: 1px solid #000;
+        background: #fff;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    button:hover {
+        background: #ddd;
+    }
+    #headerStats {
+        text-align: center;
+        margin: 10px;
+        font-size: 16px;
+    }
 </style>
+
 </head>
 <body>
 
-<div id="bootup"></div>
+<div id="bootScreen"></div>
 
-<div id="board">
 <h1>JGSDF Mission Board</h1>
 
-<div id="rank">Rank: Recruit ★</div>
-<div class="xp-bar-container"><div class="xp-bar" id="xpBar"></div></div>
-<div id="xpText" style="text-align:center; margin-top:5px;">XP: 0 / 50</div>
-
-<div class="section">
-  <h2>Available Missions</h2>
-  <div id="availableMissions" class="mission-board"></div>
+<div id="headerStats">
+    XP: <span id="xp"></span> |
+    Streak: <span id="streak"></span> days
 </div>
 
-<div class="section">
-  <h2>Accepted Missions</h2>
-  <div id="acceptedMissions" class="mission-board"></div>
-</div>
+<div class="section-title">DAILY MISSIONS</div>
+<div id="daily"></div>
 
-<h2>Mission Log</h2>
-<div id="log">Your mission logs will appear here...</div>
-<button onclick="downloadLog()">Export Mission Log</button>
+<div class="section-title">WEEKLY MISSIONS</div>
+<div id="weekly"></div>
+
+<div class="section-title">BONUS MISSIONS</div>
+<div id="bonus"></div>
+
+<div class="section-title">ACCEPTED MISSIONS</div>
+<div id="acceptedSection"></div>
+
+<div id="briefingBox">
+    <div id="briefingText"></div>
+    <button onclick="confirmComplete()">Confirm Completion</button>
+    <button onclick="closeBriefing()">Cancel</button>
 </div>
 
 <script>
-/******** CONFIG ********/
-const ranks=["Recruit ★","Private ★★","Corporal ★★★","Sergeant ★★★★","Lieutenant ★★★★★"];
-const rankXP=[50,100,200,350,9999];
-const XP_DAILY=5, XP_WEEKLY=15, XP_BONUS=25, XP_COMPLETE_ALL=50, XP_STREAK=10;
+/* ----------------------------------------
+   LONG MISSION POOLS (30+ each)
+------------------------------------------ */
 
-const dailyPool=[
-  {task:"Morning Drill: Make bed & stretch 5 min",brief:"Start the day strong."},
-  {task:"Room Readiness: Organize tactical gear & clean desk",brief:"Ensure barracks is inspection-ready."},
-  {task:"Bike Recon: Short neighborhood patrol",brief:"Scout local area."},
-  {task:"Physical Training: 10 push-ups, 10 sit-ups, 5 min stealth walk",brief:"Maintain physical readiness."},
-  {task:"Evening Debrief: Write 1–2 sentence mission log",brief:"Record operations."},
-  {task:"Inspect first aid kit & flashlight",brief:"Check tools for emergency readiness."},
-  {task:"Hydration check: prepare water bottle",brief:"Prepare for sustained operations."},
-  {task:"Check bike tires & brakes",brief:"Ensure vehicle readiness."},
-  {task:"Organize stationery / tactical notebook",brief:"Keep intel in order."},
-  {task:"Inspect personal clothing / uniform setup",brief:"Uniform readiness is key."}
+const dailyPool = [
+    "Make bed with military precision",
+    "10 push-ups, 10 sit-ups",
+    "Organize desk",
+    "Bike recon: 5 minutes",
+    "Stretch before sleep",
+    "Hydrate mission: drink 1 bottle",
+    "Tidy room fast-clean",
+    "Write 1-sentence log",
+    "Quick wardrobe inspection",
+    "Check weather for next day",
+    "5-minute deep breathing",
+    "Plan tomorrow schedule",
+    "Wipe surfaces dust check",
+    "Light room patrol",
+    "Compact bag loadout check",
+    "Prepare water bottle",
+    "Set alarm",
+    "Review mission board",
+    "Laundry check",
+    "Floor inspection",
+    "Phone battery ready check",
+    "Organize cables",
+    "Window check",
+    "Door security check",
+    "Trash disposal",
+    "Gear maintenance",
+    "Hydration refill",
+    "Quick meditation",
+    "5-minute silent patrol",
+    "Backpack cleanout"
 ];
 
-const weeklyPool=[
-  {task:"Supply Run: Buy Daiso or tactical gear",brief:"Resupply for next week's missions."},
-  {task:"Recon Patrol: Map a 1-hr bike route",brief:"Scout and record extended routes."},
-  {task:"Night Ops: Stealthy night ride",brief:"Train night mobility."},
-  {task:"Disaster Prep Drill: Evacuation & emergency kit",brief:"Simulate emergency readiness."},
-  {task:"Community Ops: Litter pickup or small aid delivery",brief:"Support local civilians."}
+const weeklyPool = [
+    "Full room organization",
+    "Bike maintenance check",
+    "Clothing fold + arrangement",
+    "Change bedding",
+    "Digital cleanup: apps/files",
+    "Do laundry",
+    "Desk deep-clean",
+    "Plan weekly goals",
+    "Inspect room inventory",
+    "Fix something broken",
+    "Clean floor thoroughly",
+    "Organize drawers",
+    "Gear deep maintenance",
+    "Review last week's logs",
+    "Plan next week missions",
+    "Wash bike",
+    "Emergency bag check",
+    "Social duty: message someone",
+    "Restock consumables",
+    "Trash deep takeout",
+    "Bathroom cleaning",
+    "Window cleaning",
+    "Shoe maintenance",
+    "Closet organization",
+    "Meal prep planning",
+    "Budget check",
+    "Health check",
+    "Long walk mission",
+    "Bike long patrol",
+    "Deep focus session"
 ];
 
-const bonusPool=[
-  {task:"Intelligence Analyst: Map train patterns or bike routes",brief:"Gather intel on transportation."},
-  {task:"Tactical Planning: Redesign room layout or bike setup",brief:"Optimize your base."},
-  {task:"Long Recon: 10–15 km stealth bike ride",brief:"Extended patrol to test endurance."}
+const bonusPool = [
+    "Special recon mission outside",
+    "Random kindness operation",
+    "30 push-ups challenge",
+    "Room redesign idea",
+    "Write full mission log",
+    "Organize cables perfectly",
+    "Super-clean desk",
+    "10-minute meditation",
+    "Special bike patrol",
+    "Night discipline exercise",
+    "Declutter 20 items",
+    "Backup data mission",
+    "Mini research assignment",
+    "1-hour discipline focus",
+    "Laundry bonus cycle",
+    "Learn something new",
+    "Review JGSDF ranks",
+    "Improve posture check",
+    "Upgrade room item",
+    "Write a motivational line",
+    "Hydration marathon",
+    "5-minute freeze discipline",
+    "Phone declutter",
+    "Stretching full set",
+    "Mission board improvement",
+    "Light workout bonus",
+    "Room blackout check",
+    "Gear photo documentation",
+    "New tactical habit",
+    "Clean bike chain"
 ];
 
-let state={
-  currentXP:0,
-  currentRank:0,
-  missionLog:"",
-  available:[],
-  accepted:[],
-  completedDaily:0,
-  completedWeekly:0,
-  bonusGiven:false,
-  streak:0,
-  lastActive:null
+/* ----------------------------------------
+   STATE & PERSISTENCE
+------------------------------------------ */
+
+let state = JSON.parse(localStorage.getItem("missionState")) || {
+    dailyGenerated: "",
+    weeklyGenerated: "",
+    daily: [],
+    weekly: [],
+    bonus: [],
+    accepted: [],
+    xp: 0,
+    streak: 0,
+    lastCompletionDate: ""
 };
 
-/******** STORAGE ********/
-function saveState(){localStorage.setItem('jgsdfState',JSON.stringify(state));}
-function loadState(){const s=localStorage.getItem('jgsdfState'); if(s){state=JSON.parse(s);}}
+function saveState() {
+    localStorage.setItem("missionState", JSON.stringify(state));
+}
 
-/******** UTIL ********/
-function shuffleArray(arr){return arr.sort(()=>0.5-Math.random());}
-function pickRandom(pool,count){const copy=[...pool]; shuffleArray(copy); return copy.slice(0,count);}
-function sameDay(d1,d2){return new Date(d1).toDateString()===new Date(d2).toDateString();}
+/* ----------------------------------------
+   AUTO GENERATION
+------------------------------------------ */
 
-/******** MISSION GENERATION ********/
-function autoGenerateMissions(){
-  const today=new Date();
-  const last=state.lastActive ? new Date(state.lastActive) : null;
-  if(!last || !sameDay(last,today)){
-    // Update streak
-    if(last && (today - last)/(1000*60*60*24)===1) state.streak++;
-    else state.streak=1;
-
-    state.available=[];
-    state.completedDaily=0;
-    state.completedWeekly=0;
-    state.bonusGiven=false;
-
-    state.available.push(...pickRandom(dailyPool,6));
-    state.available.push(...pickRandom(weeklyPool,6));
-    if(Math.random()<0.3) state.available.push(...pickRandom(bonusPool,3));
-
-    state.lastActive=today;
+function newDay() {
+    state.daily = pickRandom(dailyPool, 5);
+    state.dailyGenerated = today();
     saveState();
-  }
 }
 
-/******** RENDER ********/
-function renderMissions(){
-  const avail=document.getElementById('availableMissions');
-  avail.innerHTML="";
-  state.available.forEach((m,i)=>{
-    const card=document.createElement('div');
-    card.className="mission-card";
-    card.textContent=m.task;
-    card.onclick=()=>acceptMission(i);
-    avail.appendChild(card);
-  });
-
-  const accepted=document.getElementById('acceptedMissions');
-  accepted.innerHTML="";
-  state.accepted.forEach((m,i)=>{
-    const card=document.createElement('div');
-    card.className="mission-card accepted";
-    card.textContent=m.task;
-    const btn=document.createElement('button');
-    btn.textContent="Show Briefing";
-    btn.onclick=()=>showBriefing(i);
-    card.appendChild(btn);
-    accepted.appendChild(card);
-  });
+function newWeek() {
+    state.weekly = pickRandom(weeklyPool, 5);
+    state.weeklyGenerated = weekID();
+    saveState();
 }
 
-/******** MISSION WORKFLOW ********/
-function acceptMission(idx){
-  const mission=state.available.splice(idx,1)[0];
-  state.accepted.push(mission);
-  saveState();
-  renderMissions();
+function randomBonus() {
+    if (Math.random() < 0.25) {
+        const b = pickRandom(bonusPool, 1)[0];
+        state.bonus.push(b);
+        saveState();
+    }
 }
 
-function showBriefing(idx){
-  const mission=state.accepted[idx];
-  if(confirm(`MISSION BRIEFING:\n\n${mission.brief}\n\nClick OK to complete mission.`)){
-    completeMission(idx);
-  }
+/* Helpers */
+function pickRandom(pool, n) {
+    const arr = [...pool];
+    const out = [];
+    while (out.length < n) {
+        const i = Math.floor(Math.random() * arr.length);
+        out.push(arr.splice(i, 1)[0]);
+    }
+    return out;
 }
 
-function completeMission(idx){
-  const mission=state.accepted.splice(idx,1)[0];
-  let xp=XP_DAILY;
-  if(weeklyPool.some(m=>m.task===mission.task)) xp=XP_WEEKLY;
-  else if(bonusPool.some(m=>m.task===mission.task)) xp=XP_BONUS;
-
-  state.currentXP+=xp;
-  state.missionLog+=`[${new Date().toLocaleDateString()}] Completed: ${mission.task} (+${xp} XP)\n`;
-
-  if(dailyPool.some(m=>m.task===mission.task)) state.completedDaily++;
-  if(weeklyPool.some(m=>m.task===mission.task)) state.completedWeekly++;
-
-  // Bonus XP for completing all daily+weekly
-  if(state.completedDaily>=6 && state.completedWeekly>=6 && !state.bonusGiven){
-    state.currentXP+=XP_COMPLETE_ALL;
-    state.missionLog+=`[${new Date().toLocaleDateString()}] Bonus XP for completing all daily & weekly missions (+${XP_COMPLETE_ALL} XP)\n`;
-    state.bonusGiven=true;
-  }
-
-  // Streak bonus
-  if(state.streak>1){
-    state.currentXP+=XP_STREAK;
-    state.missionLog+=`[${new Date().toLocaleDateString()}] Streak Bonus XP (+${XP_STREAK} XP)\n`;
-  }
-
-  updateRank();
-  updateXPBar();
-  saveState();
-  renderMissions();
-  document.getElementById('log').textContent=state.missionLog;
+function today() {
+    return new Date().toLocaleDateString();
+}
+function weekID() {
+    const d = new Date();
+    return `${d.getFullYear()}-W${Math.floor((d.getDate() + 6) / 7)}`;
 }
 
-/******** RANK & XP ********/
-function updateRank(){
-  while(state.currentRank<ranks.length-1 && state.currentXP>=rankXP[state.currentRank]){
-    state.currentRank++;
-  }
-  document.getElementById('rank').textContent=`Rank: ${ranks[state.currentRank]} | Streak: ${state.streak} day(s)`;
+/* ----------------------------------------
+   ACCEPT → BRIEFING → COMPLETE
+------------------------------------------ */
+
+let currentMission = null;
+
+function acceptMission(type, mission) {
+    state.accepted.push({ type, mission });
+    state[type] = state[type].filter(m => m !== mission);
+    saveState();
+    render();
 }
 
-function updateXPBar(){
-  const nextXP=rankXP[state.currentRank] || rankXP[rankXP.length-1];
-  const percent=Math.min((state.currentXP/nextXP)*100,100);
-  document.getElementById('xpBar').style.width=`${percent}%`;
-  document.getElementById('xpText').textContent=`XP: ${state.currentXP} / ${nextXP}`;
+function openBriefing(missionObj) {
+    currentMission = missionObj;
+    document.getElementById("briefingText").innerText =
+        "MISSION BRIEFING:\n\n" + missionObj.mission + "\n\nProceed?";
+    document.getElementById("briefingBox").style.display = "block";
 }
 
-/******** LOG ********/
-function downloadLog(){
-  const blob=new Blob([state.missionLog],{type:'text/plain'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download=`JGSDF_Mission_Log_${new Date().toLocaleDateString()}.txt`;
-  a.click();
-  URL.revokeObjectURL(url);
+function closeBriefing() {
+    document.getElementById("briefingBox").style.display = "none";
 }
 
-/******** CINEMATIC BOOTUP ********/
-const bootText=[
-  "JGSDF MISSION BOARD INITIALIZING...",
-  "LOADING SYSTEM MODULES...",
-  "CHECKING DAILY MISSIONS...",
-  "CHECKING WEEKLY MISSIONS...",
-  "CHECKING BONUS MISSIONS...",
-  "ESTABLISHING CONNECTION TO CENTRAL COMMAND...",
-  "ALL SYSTEMS OPERATIONAL",
-  "PRESS ANY KEY TO CONTINUE..."
+function confirmComplete() {
+    const m = currentMission;
+    let xpGain = 0;
+    if (m.type === "daily") xpGain = 10;
+    if (m.type === "weekly") xpGain = 30;
+    if (m.type === "bonus") xpGain = 50;
+
+    state.xp += xpGain;
+
+    /* Streak system */
+    if (state.lastCompletionDate !== today()) {
+        state.streak += 1;
+        state.lastCompletionDate = today();
+    }
+
+    /* Remove mission */
+    state.accepted = state.accepted.filter(x => x !== m);
+
+    saveState();
+    closeBriefing();
+    render();
+}
+
+/* ----------------------------------------
+   RENDER
+------------------------------------------ */
+
+function renderList(id, arr, type) {
+    const box = document.getElementById(id);
+    box.innerHTML = "";
+    arr.forEach(m => {
+        const div = document.createElement("div");
+        div.className = "mission";
+        div.innerText = m;
+        div.onclick = () => acceptMission(type, m);
+        box.appendChild(div);
+    });
+}
+
+function renderAccepted() {
+    const box = document.getElementById("acceptedSection");
+    box.innerHTML = "";
+    state.accepted.forEach(m => {
+        const d = document.createElement("div");
+        d.className = "mission";
+        d.innerText = `[${m.type.toUpperCase()}] ${m.mission}`;
+        d.onclick = () => openBriefing(m);
+        box.appendChild(d);
+    });
+}
+
+function render() {
+    renderList("daily", state.daily, "daily");
+    renderList("weekly", state.weekly, "weekly");
+    renderList("bonus", state.bonus, "bonus");
+    renderAccepted();
+    document.getElementById("xp").innerText = state.xp;
+    document.getElementById("streak").innerText = state.streak;
+}
+
+/* ----------------------------------------
+   BOOT SCREEN
+------------------------------------------ */
+
+const bootLines = [
+    "JGSDF SYSTEM BOOTING...",
+    "Loading mission protocols...",
+    "Checking equipment...",
+    "Synchronizing tactical database...",
+    "Deploying mission board...",
+    "System ready."
 ];
 
-function runBootupAnimation(){
-  const bootDiv=document.getElementById('bootup');
-  let index=0;
-  function typeLine(line,callback){
-    let i=0;
-    function typeChar(){
-      if(i<line.length){
-        bootDiv.textContent+=line[i];
-        i++;
-        setTimeout(typeChar,30);
-      }else{
-        bootDiv.textContent+="\n";
-        setTimeout(callback,200);
-      }
+async function boot() {
+    const screen = document.getElementById("bootScreen");
+    let out = "";
+    for (let line of bootLines) {
+        out += line + "\n";
+        screen.innerText = out;
+        await new Promise(r => setTimeout(r, 500));
     }
-    typeChar();
-  }
-  function nextLine(){
-    if(index<bootText.length){
-      typeLine(bootText[index],()=>{ index++; nextLine(); });
-    }else{
-      // Wait for user keypress
-      document.addEventListener('keydown',finishBootup);
-    }
-  }
-  nextLine();
-}
-function finishBootup(){
-  document.getElementById('bootup').style.display='none';
-  document.getElementById('board').style.display='block';
-  autoGenerateMissions();
-  renderMissions();
-  updateXPBar();
-  updateRank();
-  document.removeEventListener('keydown',finishBootup);
+    setTimeout(() => {
+        screen.style.display = "none";
+    }, 800);
 }
 
-/******** INIT ********/
-window.onload=function(){
-  loadState();
-  runBootupAnimation();
-};
+/* ----------------------------------------
+   INIT
+------------------------------------------ */
+
+function init() {
+    if (state.dailyGenerated !== today()) newDay();
+    if (state.weeklyGenerated !== weekID()) newWeek();
+    randomBonus();
+    render();
+    boot();
+}
+
+init();
+
 </script>
+
 </body>
 </html>
